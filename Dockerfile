@@ -1,22 +1,23 @@
 # Use OpenJDK base image
 FROM eclipse-temurin:17-jdk
 
-# Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper & pom.xml first (to use cache)
+# Copy Maven wrapper and set permissions
 COPY mvnw .
+RUN chmod +x mvnw                # 🔧 THIS FIXES THE ISSUE
+
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Download dependencies (helps with Docker caching)
+# Download dependencies
 RUN ./mvnw dependency:go-offline
 
-# Copy the rest of the source code
+# Copy rest of the project
 COPY src ./src
 
-# Build the Spring Boot app
+# Build the JAR
 RUN ./mvnw clean package -DskipTests
 
-# Run the built JAR
+# Run the built app
 CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
